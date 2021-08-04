@@ -8,12 +8,12 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=miniupnpd
-PKG_VERSION:=2.0
-PKG_RELEASE:=1
+PKG_VERSION:=2.0.20170421
+PKG_RELEASE:=2
 
 PKG_SOURCE_URL:=http://miniupnp.free.fr/files
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.gz
-PKG_MD5SUM:=1c07a215dd9b362e75a9efc05e2fb3b4
+PKG_MD5SUM:=15f1c8e2200379da6b3d327fe068393a
 
 PKG_MAINTAINER:=Markus Stenberg <fingon@iki.fi>
 PKG_LICENSE:=BSD-3-Clause
@@ -27,6 +27,13 @@ define Package/miniupnpd
   TITLE:=Lightweight UPnP IGD, NAT-PMP & PCP daemon
   SUBMENU:=Firewall
   URL:=http://miniupnp.free.fr/
+endef
+
+define Package/miniupnpd/config
+config MINIUPNPD_IGDv2
+	bool
+	default n
+	prompt "Enable IGDv2"
 endef
 
 define Package/miniupnpd/conffiles
@@ -54,9 +61,12 @@ MAKE_FLAGS += \
 	LIBS="" \
 	CC="$(TARGET_CC) -DIPTABLES_143 \
 		-lip4tc $(if $(CONFIG_IPV6),-lip6tc) -luuid" \
-	CONFIG_OPTIONS="$(if $(CONFIG_IPV6),--ipv6) --leasefile" \
+	CONFIG_OPTIONS="--portinuse --leasefile \
+		$(if $(CONFIG_IPV6),--ipv6) \
+		$(if $(CONFIG_MINIUPNPD_IGDv2),--igd2)" \
 	-f Makefile.linux \
 	miniupnpd
+
 
 define Package/miniupnpd/install
 	$(INSTALL_DIR) $(1)/usr/sbin $(1)/etc/init.d $(1)/etc/config $(1)/etc/uci-defaults $(1)/etc/hotplug.d/iface $(1)/usr/share/miniupnpd
